@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Numerology Calculator</title>
+    <title>Live Numerology Calculator</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -28,7 +28,12 @@
         }
         h1 {
             color: #4a5568;
-            margin-bottom: 20px;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            color: #718096;
+            font-size: 14px;
+            margin-bottom: 25px;
         }
         .form-group {
             margin-bottom: 15px;
@@ -47,22 +52,11 @@
             border-radius: 6px;
             box-sizing: border-box;
             font-size: 16px;
+            transition: border-color 0.2s;
         }
-        button {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            font-size: 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            width: 100%;
-            font-weight: bold;
-            transition: background 0.2s;
-            margin-top: 10px;
-        }
-        button:hover {
-            background: #5a67d8;
+        input[type="text"]:focus, input[type="date"]:focus {
+            outline: none;
+            border-color: #667eea;
         }
         .result {
             margin-top: 25px;
@@ -86,6 +80,7 @@
             background: #edf2f7;
             padding: 12px;
             border-radius: 6px;
+            animation: fadeIn 0.3s ease-in-out;
         }
         .num-item p {
             margin: 0;
@@ -100,35 +95,48 @@
             color: #764ba2;
             margin-top: 5px;
         }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>Numerology Calculator</h1>
+    <div class="subtitle">Results update instantly as you type</div>
     
     <div class="form-group">
-        <label for="name">Name (Optional):</label>
-        <input type="text" id="name" placeholder="Enter name">
+        <label for="name">Name:</label>
+        <input type="text" id="name" placeholder="Start typing a name...">
     </div>
     
     <div class="form-group">
-        <label for="dob">Date of Birth (Optional):</label>
+        <label for="dob">Date of Birth:</label>
         <input type="date" id="dob">
     </div>
-    
-    <button onclick="calculateNumerology()">Calculate</button>
     
     <div class="result" id="resultBox">
         <h3 id="greeting">Results</h3>
         <div class="number-grid" id="numberGrid">
-            <!-- Dynamic result cards will appear here -->
-        </div>
+            </div>
     </div>
 </div>
 
 <script>
-    // Helper function to reduce any number to a single digit (1-9)
+    // Elements
+    const nameInput = document.getElementById('name');
+    const dobInput = document.getElementById('dob');
+    const resultBox = document.getElementById('resultBox');
+    const grid = document.getElementById('numberGrid');
+    const greeting = document.getElementById('greeting');
+
+    // Attach "input" event listeners for real-time tracking
+    nameInput.addEventListener('input', calculateLiveNumerology);
+    dobInput.addEventListener('input', calculateLiveNumerology);
+
+    // Helper: Reduce any number to single digit (1-9)
     function getSingleDigit(num) {
         while (num > 9) {
             let sum = 0;
@@ -141,76 +149,84 @@
         return num;
     }
 
-    // Function to calculate Pythagorean value of a name string
-    function getNameNumber(name) {
-        const cleanName = name.toUpperCase().replace(/[^A-Z]/g, '');
+    // Helper: Alphanumeric conversion logic
+    function getNameNumberAlphanumeric(inputStr) {
+        const upperStr = inputStr.toUpperCase();
         let total = 0;
         
-        for (let i = 0; i < cleanName.length; i++) {
-            // A=1, B=2... I=9, J=1, K=2...
-            let code = cleanName.charCodeAt(i) - 64; 
-            let val = code % 9 === 0 ? 9 : code % 9;
-            total += val;
+        for (let i = 0; i < upperStr.length; i++) {
+            let char = upperStr[i];
+            
+            if (char >= '0' && char <= '9') {
+                total += parseInt(char, 10);
+            } 
+            else if (char >= 'A' && char <= 'Z') {
+                let code = char.charCodeAt(0) - 64; 
+                let val = code % 9 === 0 ? 9 : code % 9;
+                total += val;
+            }
         }
         return getSingleDigit(total);
     }
 
-    function calculateNumerology() {
-        const name = document.getElementById('name').value.trim();
-        const dobInput = document.getElementById('dob').value;
-        const grid = document.getElementById('numberGrid');
+    // Main live function
+    function calculateLiveNumerology() {
+        const name = nameInput.value.trim();
+        const dobValue = dobInput.value;
         
-        // Clear previous results
-        grid.innerHTML = '';
-
-        if (!name && !dobInput) {
-            alert("Please enter at least a Name or a Date of Birth!");
+        // Reset view if fields are empty
+        if (!name && !dobValue) {
+            resultBox.style.display = 'none';
+            grid.innerHTML = '';
             return;
         }
 
-        // 1. Process Name if provided
+        // Keep content clean during quick typing switches
+        grid.innerHTML = '';
+
+        // 1. Live Name Processing
         if (name) {
-            document.getElementById('greeting').innerText = `Results for: ${name}`;
-            const nameNum = getNameNumber(name);
+            greeting.innerText = `Results for: ${name}`;
+            const nameNum = getNameNumberAlphanumeric(name);
             
             grid.innerHTML += `
                 <div class="num-item">
-                    <p>Name Number (Total Letters)</p>
+                    <p>Name Number (Total Value)</p>
                     <span>${nameNum}</span>
                 </div>
             `;
         } else {
-            document.getElementById('greeting').innerText = `Results`;
+            greeting.innerText = `Results`;
         }
 
-        // 2. Process DOB if provided
-        if (dobInput) {
-            const dateObj = new Date(dobInput);
-            const day = dateObj.getDate();
-            const month = dateObj.getMonth() + 1;
-            const year = dateObj.getFullYear();
+        // 2. Live DOB Processing
+        if (dobValue) {
+            // Split manually to avoid timezone shifting issues inherent to native Date parsing strings
+            const dateParts = dobValue.split('-'); 
+            if (dateParts.length === 3) {
+                const day = parseInt(dateParts[2], 10);
+                const month = parseInt(dateParts[1], 10);
+                const year = parseInt(dateParts[0], 10);
 
-            // Mulank (Single digit of the birth Day)
-            const mulank = getSingleDigit(day);
+                const mulank = getSingleDigit(day);
+                const totalSum = day + month + year;
+                const bhagyaank = getSingleDigit(totalSum);
 
-            // Bhagyaank (Single digit of Day + Month + Year)
-            const totalSum = day + month + year;
-            const bhagyaank = getSingleDigit(totalSum);
-
-            grid.innerHTML += `
-                <div class="num-item">
-                    <p>Mulank (Psychic Number)</p>
-                    <span>${mulank}</span>
-                </div>
-                <div class="num-item">
-                    <p>Bhagyaank (Destiny Number)</p>
-                    <span>${bhagyaank}</span>
-                </div>
-            `;
+                grid.innerHTML += `
+                    <div class="num-item">
+                        <p>Mulank (Psychic Number)</p>
+                        <span>${mulank}</span>
+                    </div>
+                    <div class="num-item">
+                        <p>Bhagyaank (Destiny Number)</p>
+                        <span>${bhagyaank}</span>
+                    </div>
+                `;
+            }
         }
 
-        // Display Results box
-        document.getElementById('resultBox').style.display = 'block';
+        // Make card visible 
+        resultBox.style.display = 'block';
     }
 </script>
 
