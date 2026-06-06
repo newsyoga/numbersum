@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mulank & Bhagyaank Calculator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+        h1 {
+            color: #4a5568;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        input [type="text"], input[type="date"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: #5a67d8;
+        }
+        .result {
+            margin-top: 25px;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 8px;
+            border-left: 5px solid #764ba2;
+            display: none;
+        }
+        .result h3 {
+            margin: 0 0 10px 0;
+            color: #2d3748;
+        }
+        .number-box {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+        }
+        .num-item {
+            background: #edf2f7;
+            padding: 10px;
+            border-radius: 6px;
+            width: 45%;
+        }
+        .num-item span {
+            display: block;
+            font-size: 24px;
+            font-weight: bold;
+            color: #764ba2;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Numerology Calculator</h1>
+    
+    <div class="form-group">
+        <label for="name">Name:</label>
+        <input type="text" id="name" placeholder="Enter your name" required>
+    </div>
+    
+    <div class="form-group">
+        <label for="dob">Date of Birth:</label>
+        <input type="date" id="dob" required>
+    </div>
+    
+    <button onclick="calculateNumerology()">Calculate</button>
+    
+    <div class="result" id="resultBox">
+        <h3 id="greeting"></h3>
+        <div class="number-box">
+            <div class="num-item">
+                Mulank (Psychic)
+                <span id="mulank">0</span>
+            </div>
+            <div class="num-item">
+                Bhagyaank (Destiny)
+                <span id="bhagyaank">0</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Helper function to reduce any number to a single digit (1-9)
+    function getSingleDigit(num) {
+        while (num > 9) {
+            let sum = 0;
+            while (num > 0) {
+                sum += num % 10;
+                num = Math.floor(num / 10);
+            }
+            num = sum;
+        }
+        return num;
+    }
+
+    function calculateNumerology() {
+        const name = document.getElementById('name').value.trim();
+        const dobInput = document.getElementById('dob').value;
+
+        if (!name || !dobInput) {
+            alert("Please enter both Name and Date of Birth!");
+            return;
+        }
+
+        // Parse the date (YYYY-MM-DD)
+        const dateObj = new Date(dobInput);
+        const day = dateObj.getDate();
+        const month = dateObj.getMonth() + 1; // Months are 0-indexed
+        const year = dateObj.getFullYear();
+
+        // 1. Calculate Mulank (Single digit of the birth Day)
+        const mulank = getSingleDigit(day);
+
+        // 2. Calculate Bhagyaank (Single digit of Day + Month + Year)
+        const totalSum = day + month + year;
+        const bhagyaank = getSingleDigit(totalSum);
+
+        // Display Results
+        document.getElementById('greeting').innerText = `Hello, ${name}!`;
+        document.getElementById('mulank').innerText = mulank;
+        document.getElementById('bhagyaank').innerText = bhagyaank;
+        document.getElementById('resultBox').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
