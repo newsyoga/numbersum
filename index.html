@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mulank & Bhagyaank Calculator</title>
+    <title>Numerology Calculator</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -12,8 +12,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
         }
         .container {
             background: #fff;
@@ -21,7 +23,7 @@
             border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             text-align: center;
-            max-width: 400px;
+            max-width: 450px;
             width: 100%;
         }
         h1 {
@@ -38,7 +40,7 @@
             font-weight: 600;
             color: #4a5568;
         }
-        input [type="text"], input[type="date"] {
+        input[type="text"], input[type="date"] {
             width: 100%;
             padding: 10px;
             border: 1px solid #cbd5e0;
@@ -57,6 +59,7 @@
             width: 100%;
             font-weight: bold;
             transition: background 0.2s;
+            margin-top: 10px;
         }
         button:hover {
             background: #5a67d8;
@@ -70,25 +73,32 @@
             display: none;
         }
         .result h3 {
-            margin: 0 0 10px 0;
+            margin: 0 0 15px 0;
             color: #2d3748;
         }
-        .number-box {
-            display: flex;
-            justify-content: space-around;
+        .number-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
             margin-top: 15px;
         }
         .num-item {
             background: #edf2f7;
-            padding: 10px;
+            padding: 12px;
             border-radius: 6px;
-            width: 45%;
+        }
+        .num-item p {
+            margin: 0;
+            font-size: 14px;
+            color: #4a5568;
+            font-weight: 600;
         }
         .num-item span {
             display: block;
-            font-size: 24px;
+            font-size: 26px;
             font-weight: bold;
             color: #764ba2;
+            margin-top: 5px;
         }
     </style>
 </head>
@@ -98,28 +108,21 @@
     <h1>Numerology Calculator</h1>
     
     <div class="form-group">
-        <label for="name">Name:</label>
-        <input type="text" id="name" placeholder="Enter your name" required>
+        <label for="name">Name (Optional):</label>
+        <input type="text" id="name" placeholder="Enter name">
     </div>
     
     <div class="form-group">
-        <label for="dob">Date of Birth:</label>
-        <input type="date" id="dob" required>
+        <label for="dob">Date of Birth (Optional):</label>
+        <input type="date" id="dob">
     </div>
     
     <button onclick="calculateNumerology()">Calculate</button>
     
     <div class="result" id="resultBox">
-        <h3 id="greeting"></h3>
-        <div class="number-box">
-            <div class="num-item">
-                Mulank (Psychic)
-                <span id="mulank">0</span>
-            </div>
-            <div class="num-item">
-                Bhagyaank (Destiny)
-                <span id="bhagyaank">0</span>
-            </div>
+        <h3 id="greeting">Results</h3>
+        <div class="number-grid" id="numberGrid">
+            <!-- Dynamic result cards will appear here -->
         </div>
     </div>
 </div>
@@ -138,32 +141,75 @@
         return num;
     }
 
+    // Function to calculate Pythagorean value of a name string
+    function getNameNumber(name) {
+        const cleanName = name.toUpperCase().replace(/[^A-Z]/g, '');
+        let total = 0;
+        
+        for (let i = 0; i < cleanName.length; i++) {
+            // A=1, B=2... I=9, J=1, K=2...
+            let code = cleanName.charCodeAt(i) - 64; 
+            let val = code % 9 === 0 ? 9 : code % 9;
+            total += val;
+        }
+        return getSingleDigit(total);
+    }
+
     function calculateNumerology() {
         const name = document.getElementById('name').value.trim();
         const dobInput = document.getElementById('dob').value;
+        const grid = document.getElementById('numberGrid');
+        
+        // Clear previous results
+        grid.innerHTML = '';
 
-        if (!name || !dobInput) {
-            alert("Please enter both Name and Date of Birth!");
+        if (!name && !dobInput) {
+            alert("Please enter at least a Name or a Date of Birth!");
             return;
         }
 
-        // Parse the date (YYYY-MM-DD)
-        const dateObj = new Date(dobInput);
-        const day = dateObj.getDate();
-        const month = dateObj.getMonth() + 1; // Months are 0-indexed
-        const year = dateObj.getFullYear();
+        // 1. Process Name if provided
+        if (name) {
+            document.getElementById('greeting').innerText = `Results for: ${name}`;
+            const nameNum = getNameNumber(name);
+            
+            grid.innerHTML += `
+                <div class="num-item">
+                    <p>Name Number (Total Letters)</p>
+                    <span>${nameNum}</span>
+                </div>
+            `;
+        } else {
+            document.getElementById('greeting').innerText = `Results`;
+        }
 
-        // 1. Calculate Mulank (Single digit of the birth Day)
-        const mulank = getSingleDigit(day);
+        // 2. Process DOB if provided
+        if (dobInput) {
+            const dateObj = new Date(dobInput);
+            const day = dateObj.getDate();
+            const month = dateObj.getMonth() + 1;
+            const year = dateObj.getFullYear();
 
-        // 2. Calculate Bhagyaank (Single digit of Day + Month + Year)
-        const totalSum = day + month + year;
-        const bhagyaank = getSingleDigit(totalSum);
+            // Mulank (Single digit of the birth Day)
+            const mulank = getSingleDigit(day);
 
-        // Display Results
-        document.getElementById('greeting').innerText = `Hello, ${name}!`;
-        document.getElementById('mulank').innerText = mulank;
-        document.getElementById('bhagyaank').innerText = bhagyaank;
+            // Bhagyaank (Single digit of Day + Month + Year)
+            const totalSum = day + month + year;
+            const bhagyaank = getSingleDigit(totalSum);
+
+            grid.innerHTML += `
+                <div class="num-item">
+                    <p>Mulank (Psychic Number)</p>
+                    <span>${mulank}</span>
+                </div>
+                <div class="num-item">
+                    <p>Bhagyaank (Destiny Number)</p>
+                    <span>${bhagyaank}</span>
+                </div>
+            `;
+        }
+
+        // Display Results box
         document.getElementById('resultBox').style.display = 'block';
     }
 </script>
